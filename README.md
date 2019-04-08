@@ -2,7 +2,7 @@
 
 **Unzip function for AWS Lambda**
 
-The function extracts zip files and uploads files to the same S3 location. It should be waiting for S3 upload event.
+The function extracts tar.gz files and uploads files to the same S3 location. It should be waiting for S3 upload event.
 
 ## Permissions
 
@@ -33,6 +33,6 @@ See [LICENSE](LICENSE)
 In order to automatically configure lambda, check `terraform.tfvars` and run the following command:
 
 ```bash
-zip unzip_lambda.zip -xi unzip_lambda.py
+zip untar_lambda.zip -xi untar_lambda.py
 terraform apply
 ```

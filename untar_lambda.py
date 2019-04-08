@@ -1,6 +1,6 @@
 import os
 import tempfile
-import zipfile
+import tarfile
 
 from concurrent import futures
 from io import BytesIO
@@ -12,7 +12,7 @@ s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
     # Parse and prepare required items from event
-    global bucket, path, zipdata
+    global bucket, path, tardata
     event = next(iter(event['Records']))
     bucket = event['s3']['bucket']['name']
     key = event['s3']['object']['key']
@@ -23,13 +23,13 @@ def lambda_handler(event, context):
 
     # Fetch and load target file
     s3.download_file(bucket, key, temp_file)
-    zipdata = zipfile.ZipFile(temp_file)
+    tardata = tarfile.open(temp_file)
 
     # Call action method with using ThreadPool
     with futures.ThreadPoolExecutor(max_workers=4) as executor:
         future_list = [
             executor.submit(extract, filename)
-            for filename in zipdata.namelist()
+            for filename in tardata.namelist()
         ]
 
     result = {'success': [], 'fail': []}
@@ -47,7 +47,7 @@ def extract(filename):
     upload_status = 'success'
     try:
         s3.upload_fileobj(
-            BytesIO(zipdata.read(filename)),
+            BytesIO(tardata.read(filename)),
             bucket,
             os.path.join(path, filename)
         )
